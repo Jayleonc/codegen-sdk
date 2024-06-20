@@ -23,13 +23,13 @@ func NewClient(baseURL string) *Client {
 {{end}}
 
 {{range .Interfaces}}
-type {{.Path | ToCamelCase}}Response struct {
+type {{.ResponseType}} struct {
 	{{range .Returns}}{{ToCamelCase .Name}} {{paramType .Type}} ` + "`json:\"{{.Name}}\"`" + `
 	{{end}}
 }
 
-func (c *Client) {{.Method}}_{{.Path | ToCamelCase}}(req {{(index .Params 0).Name | ToCamelCase}}) ({{.Path | ToCamelCase}}Response, error) {
-	var resp {{.Path | ToCamelCase}}Response
+func (c *Client) {{.Method}}_{{.Path | ToCamelCase}}(req {{.RequestType}}) ({{.ResponseType}}, error) {
+	var resp {{.ResponseType}}
 
 	url := fmt.Sprintf("%s{{.Path}}", c.baseURL)
 	body, err := json.Marshal(req)

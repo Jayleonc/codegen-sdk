@@ -15,7 +15,16 @@ import (
 
 type templateData struct {
 	Structs    map[string]string
-	Interfaces []registry.Api
+	Interfaces []apiDef
+}
+
+type apiDef struct {
+	Method       string
+	Path         string
+	RequestType  string
+	ResponseType string
+	Params       []registry.Param
+	Returns      []registry.Return
 }
 
 func ToCamelCase(s string) string {
@@ -97,9 +106,22 @@ func GenerateClientCode(serviceName, baseURL, outputPath string, etcdClient *cli
 
 	structs := GenerateStructDefinitions(interfaces)
 
+	apis := []apiDef{}
+	for _, api := range interfaces {
+		pathCamel := ToCamelCase(api.Path)
+		apis = append(apis, apiDef{
+			Method:       api.Method,
+			Path:         api.Path,
+			RequestType:  ToCamelCase(api.Params[0].Name),
+			ResponseType: pathCamel + "Response",
+			Params:       api.Params,
+			Returns:      api.Returns,
+		})
+	}
+
 	data := templateData{
 		Structs:    structs,
-		Interfaces: interfaces,
+		Interfaces: apis,
 	}
 
 	funcMap := template.FuncMap{
